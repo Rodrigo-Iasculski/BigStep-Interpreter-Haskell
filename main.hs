@@ -49,13 +49,11 @@ type Memoria = [(String,Int)]
 exSigma :: Memoria
 exSigma = [ ("x", 10), ("temp",0), ("y",0)]
 
-
 --- A função procuraVar recebe uma memória, o nome de uma variável e retorna o conteúdo
 --- dessa variável na memória. Exemplo:
 ---
 --- *Main> procuraVar exSigma "x"
 --- 10
-
 
 procuraVar :: Memoria -> String -> Int
 procuraVar [] s = error ("Variavel " ++ s ++ " nao definida no estado")
@@ -102,34 +100,40 @@ bbigStep (Not b,s)
    | bbigStep (b,s) == True     = False
    | otherwise                  = True 
 
-bbigStep (And b1 b2,s) = bbigStep(b1,s) && bbigStep(b2,s)
-bbigStep (Or b1 b2,s)  = bbigStep(b1,s) || bbigStep(b2,s)
-bbigStep (Leq e1 e2,s) = (ebigStep(e1,s) <= ebigStep(e2,s)) == True
-bbigStep (Igual e1 e2,s) = (ebigStep(e1,s) == ebigStep(e2,s)) == True
+bbigStep (And b1 b2,s)   = bbigStep(b1,s) && bbigStep(b2,s)
+bbigStep (Or b1 b2,s)    = bbigStep(b1,s) || bbigStep(b2,s)
+bbigStep (Leq e1 e2,s)   = ebigStep(e1,s) <= ebigStep(e2,s)
+bbigStep (Igual e1 e2,s) = ebigStep(e1,s) == ebigStep(e2,s)
 -----------------------------------------------------------------------------------------------------
 cbigStep :: (C,Memoria) -> (C,Memoria)
 
 cbigStep (Skip,s) = (Skip,s)
 
 cbigStep (If b1 c1 c2,s)
- | bbigStep(b1,s) == True = cbigStep(c1,s)
+ | bbigStep(b1,s) = cbigStep(c1,s)
  | otherwise = cbigStep(c2,s)  
 
---cbigStep (Seq c1 c2,s) = cbigStep(c1,s) cbigStep(c2,s)
+cbigStep (Seq c1 c2,s)
+ | c3 /= Skip = cbigStep(Seq c3 c2,s1)
+ | otherwise = cbigStep(c2,s1)
+ where
+   (c3,s1) = cbigStep(c1,s)   
 
 cbigStep (Atrib (Var x) e,s) = (Skip,mudaVar s x (ebigStep(e,s)))
-
+    
 cbigStep (While b1 c1,s)
- | bbigStep(b1,s) == True = cbigStep(c1,s)
- | otherwise = (Skip,s) 
+ | bbigStep(b1,s) = cbigStep(While b1 c1,s1)
+ | otherwise = (Skip,s)
+ where 
+   (_,s1) = cbigStep(c1,s)
 
 --cbigStep (TenTimes C,s)
 
---cbigStep (Repeat c1 b1,s)
--- | bbigStep(b1,s) == True = (Skip,s)
--- | otherwise = cbigStep(c1,s)
-
-cbigStep (Repeat c1 b1,s) = cbigStep(While bbigStep(Not b1),c1)
+cbigStep (Repeat c1 b1,s)
+ | bbigStep(b1,s1) = (Skip,s1)
+ | otherwise = (While (Not b1) c1,s1)
+ where
+   (_,s1) = cbigStep(c1,s)
 
  -- Loop E E C      ---- Loop e1 e2 c: executa (e2 - e1) vezes o comando C 
  -- DuplaATrib E E E E -- recebe 2 variáveis e 2 expressões (DuplaATrib (Var v1) (Var v2) e1 e2) e faz v1:=e1 e v2:=e2
@@ -192,3 +196,5 @@ fatorial = (Seq (Atrib (Var "y") (Num 1))
                 (While (Not (Igual (Var "x") (Num 1)))
                        (Seq (Atrib (Var "y") (Mult (Var "y") (Var "x")))
                             (Atrib (Var "x") (Sub (Var "x") (Num 1))))))
+
+

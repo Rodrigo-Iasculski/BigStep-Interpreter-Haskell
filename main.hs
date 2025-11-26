@@ -126,12 +126,12 @@ cbigStep(Loop e1 e2 c,s)
  | otherwise = (Skip,s)
 
  -- DuplaATrib E E E E -- recebe 2 variáveis e 2 expressões (DuplaATrib (Var v1) (Var v2) e1 e2) e faz v1:=e1 e v2:=e2
+cbigStep(DuplaATrib x y e1 e2,s) = cbigStep(Seq (Atrib x e1) (Atrib y e2),s) 
+
 cbigStep (AtribCond b x e1 e2,s)
  | bbigStep(b,s) = cbigStep((Atrib x e1,s))
  | otherwise = cbigStep((Atrib x e2,s))
 
-
---- AtribCond b (Var v1) e1 e2: se b for verdade, então faz v1:e1, se B for falso faz v1:=e2
 -- Swap E E -- swap(x,y): troca o conteúdo das variáveis x e y 
 -----------------------------------------------------------------------------------------------------
 --- * Loop
@@ -161,3 +161,13 @@ fatorial = (Seq (Atrib (Var "y") (Num 1))
                 (While (Not (Igual (Var "x") (Num 1)))
                        (Seq (Atrib (Var "y") (Mult (Var "y") (Var "x")))
                             (Atrib (Var "x") (Sub (Var "x") (Num 1))))))
+
+
+
+
+
+
+
+--cbigStep (DuplaATrib (Var "x") (Var "y") (Num 5) (Num 3) , ([("x",0 ),("y",0)]))
+--cbigStep (AtribCond FALSE (Var "x") (Num 3) (Num 5) , [("x",0)])
+--cbigStep (Loop (Num 1)(Num 3) (Atrib (Var "x") (Soma (Var "x")(Num 1) )) , [("x",0)])

@@ -111,9 +111,7 @@ cbigStep (While b c,s)
  where 
    (_,s0) = cbigStep(c,s)
 
---cbigStep (TenTimes c,s)
--- | cbigStep(Seq c (Loop((Num 0) (Num 10) c,s))) = (Skip,s)
--- | otherwise = (Skip,s)
+cbigStep (TenTimes c,s) = cbigStep(Loop (Num 0) (Num 10) c,s)
 
 cbigStep (Repeat c b,s)
  | bbigStep(b,s0) = (Skip,s0)
@@ -124,23 +122,19 @@ cbigStep (Repeat c b,s)
 cbigStep(Loop e1 e2 c,s)
  | ebigStep(e2,s) - ebigStep(e1,s) > 0 = cbigStep(Seq c (Loop e1 (Sub e2 (Num 1)) c),s)
  | otherwise = (Skip,s)
-
- -- DuplaATrib E E E E -- recebe 2 variáveis e 2 expressões (DuplaATrib (Var v1) (Var v2) e1 e2) e faz v1:=e1 e v2:=e2
 cbigStep(DuplaATrib x y e1 e2,s) = cbigStep(Seq (Atrib x e1) (Atrib y e2),s) 
 
 cbigStep (AtribCond b x e1 e2,s)
  | bbigStep(b,s) = cbigStep((Atrib x e1,s))
  | otherwise = cbigStep((Atrib x e2,s))
 
--- Swap E E -- swap(x,y): troca o conteúdo das variáveis x e y 
+--TERMINAR
+cbigStep (Swap x y,s)
+ | x == y = cbigStep(Seq(Atrib x y) (Atrib y x),s)
+ | otherwise = cbigStep(Seq(Atrib x y) (Atrib y x),s0)
+ where
+   (_,s0) = cbigStep(Atrib y (Num 2),s)
 -----------------------------------------------------------------------------------------------------
---- * Loop
---- * Dupla Atribuição
---- * Repeat until
---- * swap
---- * atrib cond
--------------------------------------
-
 exSigma2 :: Memoria
 exSigma2 = [("x",3), ("y",0), ("z",0)]
 
